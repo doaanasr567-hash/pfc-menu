@@ -1,0 +1,19 @@
+{
+  "name": "pfc-restaurant",
+  "version": "1.0.0",
+  "description": "P.F.C Restaurant Menu & Ordering System",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node server.js"
+  },
+  "dependencies": {
+    "better-sqlite3": "^11.5.0",
+    "cors": "^2.8.5",
+    "express": "^4.21.1",
+    "uuid": "^10.0.0"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}
