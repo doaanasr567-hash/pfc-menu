@@ -143,17 +143,17 @@ const menuData = [
 ];
 
 const categoryNames = {
-  all:      { ar: "الكل",              en: "All" },
-  rizzo:    { ar: "ريزو و فرايز",       en: "Rizzo & Fries" },
-  burgers:  { ar: "برجر",               en: "Burgers" },
-  macaroni: { ar: "مكرونات",            en: "Pasta" },
-  pizza:    { ar: "بيتزا",              en: "Pizza" },
-  pastries: { ar: "فطائر و كريبات",     en: "Pastries & Crepes" },
-  meals:    { ar: "وجبات فراخ",         en: "Chicken Meals" },
-  grill:    { ar: "مشويات",             en: "Grills" },
-  shawarma: { ar: "شاورما",             en: "Shawarma" },
-  drinks:   { ar: "مشروبات",            en: "Drinks" },
-  extras:   { ar: "إضافات",             en: "Extras" }
+  all:       { ar: "الكل",                 en: "All" },
+  rizzo:     { ar: "ريزو و فرايز",        en: "Rizzo & Fries" },
+  burgers:   { ar: "برجر",                  en: "Burgers" },
+  macaroni:  { ar: "مكرونات",             en: "Pasta" },
+  pizza:     { ar: "بيتزا",               en: "Pizza" },
+  pastries:  { ar: "فطائر و كريبات",     en: "Pastries & Crepes" },
+  meals:     { ar: "وجبات فراخ",          en: "Chicken Meals" },
+  grill:     { ar: "مشويات",              en: "Grills" },
+  shawarma:  { ar: "شاورما",              en: "Shawarma" },
+  drinks:    { ar: "مشروبات",             en: "Drinks" },
+  extras:    { ar: "إضافات",              en: "Extras" }
 };
 
 // ====================== UI TRANSLATIONS ======================
@@ -531,9 +531,6 @@ function showToast(msg) {
 }
 
 // ================= AI Voice Assistant =================
-// Uses the browser's native Web Speech API (SpeechRecognition + SpeechSynthesis).
-// Free, no API key, works fully in-browser. Chrome recommended.
-
 let recognition = null;
 let listening = false;
 const micBtn = document.getElementById('micBtn');
@@ -553,8 +550,6 @@ function initRecognition() {
 function logVoice(text, who) {
   const div = document.createElement('div');
   div.className = 'voice-msg ' + who;
-  // Set explicit direction per-bubble based on the message's own script,
-  // so mixed Arabic/English text never gets visually scrambled by bidi rendering.
   div.dir = /[\u0600-\u06FF]/.test(text) ? 'rtl' : 'ltr';
   div.textContent = text;
   voiceLog.appendChild(div);
@@ -568,24 +563,18 @@ function speak(text) {
   window.speechSynthesis.speak(utter);
 }
 
-// Strip tashkeel/diacritics, unify letter variants, remove punctuation,
-// collapse whitespace. Keeps matching forgiving of speech-recognition noise.
 function normalize(s) {
   return s
-    .replace(/[\u064B-\u0652\u0640]/g, '')   // remove Arabic diacritics + tatweel
+    .replace(/[\u064B-\u0652\u0640]/g, '') 
     .toLowerCase()
     .replace(/[أإآ]/g, 'ا')
     .replace(/ى/g, 'ي')
     .replace(/ة/g, 'ه')
-    .replace(/[^\p{L}\p{N}\s]/gu, ' ')        // strip punctuation
+    .replace(/[^\p{L}\p{N}\s]/gu, ' ')        
     .replace(/\s+/g, ' ')
     .trim();
 }
 
-// Fuzzy, word-overlap based matching instead of requiring an exact substring.
-// Speech recognition on transliterated/brand item names (e.g. "ريزو", "اتشكانو")
-// is often imprecise, so we score how many words overlap rather than demand
-// a perfect match.
 function findItemInText(text) {
   const queryWords = normalize(text).split(' ').filter(w => w.length > 1);
   if (queryWords.length === 0) return null;
@@ -609,7 +598,6 @@ function findItemInText(text) {
     });
   });
 
-  // Require at least half the item's name words to show up in what was heard.
   return bestScore >= 0.5 ? best : null;
 }
 
@@ -617,11 +605,25 @@ function answerQuery(text) {
   const n = normalize(text);
   const item = findItemInText(text);
 
-  // Add to cart
-  if (item && (n.includes('ضيف') || n.includes('اطلب') || n.includes('عايز') || n.includes('عاوز') || n.includes('add') || n.includes('order') || n.includes('want'))) {
-    addToCart(item.id, false);
-    const name = itemName(item);
-    return t('voiceAdded', name);
+  // التأكد من أن نية المستخدم هي طلب أو إضافة فعلية وليست مجرد تساؤل أو ذكر للصنف
+  const explicitAddKeywords = ['ضيف', 'اطلب', 'اشتري', 'هات', 'حط', 'اضف', 'add', 'order', 'buy', 'put'];
+  const hasExplicitAdd = explicitAddKeywords.some(keyword => n.includes(keyword));
+
+  // إذا استخدم "عايز" أو "عاوز" مقترنة بكلمات طلب مثل "عايز اطلب" أو "عايز أضيف"
+  const wantsToOrder = (n.includes('عايز اطلب') || n.includes('عاوز اطلب') || n.includes('عايز اضيف') || n.includes('عاوز اضيف') || n.includes('عايز اشتري') || n.includes('عاوز اشتري'));
+
+  const isAddRequest = hasExplicitAdd || wantsToOrder;
+
+  if (isAddRequest) {
+    if (item) {
+      addToCart(item.id, false);
+      const name = itemName(item);
+      return t('voiceAdded', name);
+    } else {
+      return currentLang === 'ar' 
+        ? "تحديد الصنف مطلوب! تحب أضيف إيه بالتحديد للعربة؟" 
+        : "Please specify which item you would like to add to your cart.";
+    }
   }
 
   // Price question
@@ -629,7 +631,7 @@ function answerQuery(text) {
     return t('voicePrice', itemName(item), item.price);
   }
 
-  // General item mention -> describe it
+  // General item mention / question (مثل: عايز أسأل على بيتزا تونة) -> يعرض وصفه فقط بدون إضافة
   if (item) {
     return t('voiceDesc', itemName(item), itemDesc(item), item.price);
   }
