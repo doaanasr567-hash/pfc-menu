@@ -1,1 +1,128 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>P.F.C - منيو المطعم</title>
+  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+</head>
+<body>
+  <!-- Header -->
+  <header class="header">
+    <div class="logo">
+      <div class="logo-circle"><img src="images/logo.png" alt="P.F.C Logo" class="logo-circle"></div>
+      <div class="logo-text">
+        <h1>P.F.C</h1>
+        <span>Fried Chicken & More</span>
+      </div>
+    </div>
+    <div class="header-actions">
+      <div class="lang-switch">
+        <button class="lang-btn active" data-lang="ar">AR</button>
+        <button class="lang-btn" data-lang="en">EN</button>
+      </div>
+      <button class="cart-btn" id="cartBtn">
+        <i class="fas fa-shopping-cart"></i>
+        <span class="cart-count" id="cartCount">0</span>
+      </button>
+    </div>
+  </header>
 
+  <!-- Categories Nav -->
+  <nav class="categories" id="categories">
+    <button class="cat-btn active" data-cat="all" data-ar="الكل" data-en="All">الكل</button>
+    <button class="cat-btn" data-cat="rizzo" data-ar="ريزو و فرايز" data-en="Rizzo & Fries">ريزو و فرايز</button>
+    <button class="cat-btn" data-cat="burgers" data-ar="برجر" data-en="Burgers">برجر</button>
+    <button class="cat-btn" data-cat="macaroni" data-ar="مكرونات" data-en="Pasta">مكرونات</button>
+    <button class="cat-btn" data-cat="pizza" data-ar="بيتزا" data-en="Pizza">بيتزا</button>
+    <button class="cat-btn" data-cat="pastries" data-ar="فطائر و كريبات" data-en="Pastries & Crepes">فطائر و كريبات</button>
+    <button class="cat-btn" data-cat="meals" data-ar="وجبات فراخ" data-en="Chicken Meals">وجبات فراخ</button>
+    <button class="cat-btn" data-cat="grill" data-ar="مشويات" data-en="Grills">مشويات</button>
+    <button class="cat-btn" data-cat="shawarma" data-ar="شاورما" data-en="Shawarma">شاورما</button>
+    <button class="cat-btn" data-cat="drinks" data-ar="مشروبات" data-en="Drinks">مشروبات</button>
+    <button class="cat-btn" data-cat="extras" data-ar="إضافات" data-en="Extras">إضافات</button>
+  </nav>
+
+  <!-- Menu Grid -->
+  <main class="menu-container">
+    <div class="menu-grid" id="menuGrid">
+      <!-- Items will be injected by JS -->
+    </div>
+  </main>
+
+  <!-- Cart Sidebar -->
+  <div class="cart-overlay" id="cartOverlay"></div>
+  <aside class="cart-sidebar" id="cartSidebar">
+    <div class="cart-header">
+      <h2><i class="fas fa-shopping-bag"></i> <span data-ar="عربة الطلبات" data-en="Your Cart">عربة الطلبات</span></h2>
+      <button class="close-cart" id="closeCart">&times;</button>
+    </div>
+    <div class="cart-items" id="cartItems">
+      <p class="empty-cart">العربة فارغة 🛒</p>
+    </div>
+    <div class="cart-footer">
+      <div class="cart-total">
+        <span data-ar="الإجمالي:" data-en="Total:">الإجمالي:</span>
+        <strong id="cartTotal">0 ج.م</strong>
+      </div>
+      <button class="checkout-btn" id="checkoutBtn" disabled data-ar="إتمام الطلب" data-en="Checkout">إتمام الطلب</button>
+    </div>
+  </aside>
+
+  <!-- Checkout Modal -->
+  <div class="modal" id="checkoutModal">
+    <div class="modal-content">
+      <button class="close-modal" id="closeModal">&times;</button>
+      <h2 data-ar="تأكيد الطلب" data-en="Confirm Order">تأكيد الطلب</h2>
+      <form id="orderForm">
+        <div class="form-group">
+          <label data-ar="الاسم" data-en="Name">الاسم</label>
+          <input type="text" id="customerName" required
+                 placeholder="اسمك الكامل"
+                 data-ar-placeholder="اسمك الكامل" data-en-placeholder="Your full name">
+        </div>
+        <div class="form-group">
+          <label data-ar="رقم الموبايل" data-en="Phone Number">رقم الموبايل</label>
+          <input type="tel" id="customerPhone" required
+                 placeholder="01xxxxxxxxx"
+                 data-ar-placeholder="01xxxxxxxxx" data-en-placeholder="01xxxxxxxxx">
+        </div>
+        <div class="form-group">
+          <label data-ar="العنوان/ رقم الترابيزه لو في المطعم" data-en="Address / Table No. (if dine-in)">العنوان/ رقم الترابيزه لو في المطعم</label>
+          <textarea id="customerAddress" required
+                    placeholder="العنوان بالتفصيل"
+                    data-ar-placeholder="العنوان بالتفصيل" data-en-placeholder="Full address"></textarea>
+        </div>
+        <div class="form-group">
+          <label data-ar="ملاحظات (اختياري)" data-en="Notes (optional)">ملاحظات (اختياري)</label>
+          <textarea id="orderNotes"
+                    placeholder="أي ملاحظات على الطلب"
+                    data-ar-placeholder="أي ملاحظات على الطلب" data-en-placeholder="Any notes on the order"></textarea>
+        </div>
+        <div class="order-summary" id="orderSummary"></div>
+        <button type="submit" class="submit-order" data-ar="تأكيد وإرسال الطلب" data-en="Confirm & Send Order">تأكيد وإرسال الطلب</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- Success Toast -->
+  <div class="toast" id="toast"></div>
+
+  <!-- AI Voice Assistant -->
+  <div id="voicePanel" class="voice-panel">
+    <div id="voiceLog" class="voice-log"></div>
+    <div class="voice-controls">
+      <button id="micBtn" class="mic-btn" title="Voice Assistant">
+        <svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor">
+          <path d="M12 14a3 3 0 003-3V5a3 3 0 00-6 0v6a3 3 0 003 3z"/>
+          <path d="M19 11a1 1 0 00-2 0 5 5 0 01-10 0 1 1 0 00-2 0 7 7 0 006 6.92V20H8a1 1 0 000 2h8a1 1 0 000-2h-3v-2.08A7 7 0 0019 11z"/>
+        </svg>
+      </button>
+      <span id="micStatus">اضغط وتكلم مع المساعد</span>
+    </div>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>
